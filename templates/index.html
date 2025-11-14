@@ -263,7 +263,7 @@
         .target-management-card {
             display: flex;
             flex-direction: column;
-            max-height: 600px;
+            flex-shrink: 0;
         }
 
         .target-management-card .card-title {
@@ -315,8 +315,10 @@
         }
 
         .card.scrollable {
-            flex-grow: 1;
-            min-height: 0;
+            flex: 1 1 auto;
+            min-height: 300px;
+            display: flex;
+            flex-direction: column;
         }
 
         .card-header {
@@ -679,7 +681,6 @@
         #uid-container {
             padding-right: 8px;
             overflow-y: auto;
-            max-height: 450px;
             flex-grow: 1;
             min-height: 0;
         }
