@@ -788,15 +788,26 @@ async def MaiiiinE():
     
     await asyncio.gather(task_chat, task_online, task_web_server, task_command_processor)
     
+    return True
+    
 async def StarTinG():
     while True:
         try: 
-            await asyncio.wait_for(MaiiiinE() , timeout = 7 * 60 * 60)
+            result = await asyncio.wait_for(MaiiiinE(), timeout=7 * 60 * 60)
+            
+            if result is None:
+                print("\n[!] Authentication failed. Retrying in 15 seconds...")
+                await asyncio.sleep(15)
+                continue
+            
         except asyncio.TimeoutError: 
-            print("Token ExpiRed ! , ResTartinG")
+            print("\n[!] Token expired after 7 hours. Reconnecting in 15 seconds...")
+            await asyncio.sleep(15)
+            
         except Exception as e: 
-            print(f"ErroR TcP - {e} => ResTarTinG ...")
-            await asyncio.sleep(5) 
+            print(f"\n[!] Error: {e}")
+            print("[!] Retrying in 15 seconds...")
+            await asyncio.sleep(15) 
 
 if __name__ == '__main__':
     try:
