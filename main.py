@@ -14,6 +14,7 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 online_writer = None
 whisper_writer = None
+status_check_results = {}  # Store status check results {player_id: status_info}
 bot_state = {
     "key": None,
     "iv": None,
@@ -46,6 +47,102 @@ def get_random_color():
     ]
     return random.choice(colors)
 
+def fix_num(num):
+    fixed = ""
+    count = 0
+    num_str = str(num)
+    for char in num_str:
+        if char.isdigit():
+            count += 1
+        fixed += char
+        if count == 3:
+            fixed += "[c]"
+            count = 0
+    return fixed
+
+def get_random_avatar():
+    avatar_list = [
+        '902050001', '902050002', '902050003', '902039016', '902050004',
+        '902047011', '902047010', '902049015', '902050006', '902049020'
+    ]
+    return random.choice(avatar_list)
+
+def dec_to_hex(ask):
+    ask_result = hex(ask)
+    final_result = str(ask_result)[2:]
+    if len(final_result) == 1:
+        final_result = "0" + final_result
+    return final_result
+
+def encode_varint(number):
+    if number < 0:
+        raise ValueError("Number must be non-negative")
+    encoded_bytes = []
+    while True:
+        byte = number & 0x7F
+        number >>= 7
+        if number:
+            byte |= 0x80
+        encoded_bytes.append(byte)
+        if not number:
+            break
+    return bytes(encoded_bytes)
+
+def create_varint_field(field_number, value):
+    field_header = (field_number << 3) | 0
+    return encode_varint(field_header) + encode_varint(value)
+
+def create_length_delimited_field(field_number, value):
+    field_header = (field_number << 3) | 2
+    encoded_value = value.encode() if isinstance(value, str) else value
+    return encode_varint(field_header) + encode_varint(len(encoded_value)) + encoded_value
+
+def create_protobuf_packet(fields):
+    packet = bytearray()
+    for field, value in fields.items():
+        if isinstance(value, dict):
+            nested_packet = create_protobuf_packet(value)
+            packet.extend(create_length_delimited_field(field, nested_packet))
+        elif isinstance(value, int):
+            packet.extend(create_varint_field(field, value))
+        elif isinstance(value, str) or isinstance(value, bytes):
+            packet.extend(create_length_delimited_field(field, value))
+    return packet
+
+def encrypt_packet_sync(plain_text, key, iv):
+    plain_text = bytes.fromhex(plain_text)
+    key = key if isinstance(key, bytes) else bytes.fromhex(key)
+    iv = iv if isinstance(iv, bytes) else bytes.fromhex(iv)
+    cipher = AES.new(key, AES.MODE_CBC, iv)
+    cipher_text = cipher.encrypt(pad(plain_text, AES.block_size))
+    return cipher_text.hex()
+
+def nmnmmmmn(data, key, iv):
+    key = key if isinstance(key, bytes) else bytes.fromhex(key)
+    iv = iv if isinstance(iv, bytes) else bytes.fromhex(iv)
+    data = bytes.fromhex(data) if isinstance(data, str) else data
+    cipher = AES.new(key, AES.MODE_CBC, iv)
+    cipher_text = cipher.encrypt(pad(data, AES.block_size))
+    return cipher_text.hex()
+
+def create_packet_with_header(packet_hex, header_prefix, key, iv):
+    encrypted = nmnmmmmn(packet_hex, key, iv)
+    header_length = len(encrypted) // 2
+    header_length_hex = dec_to_hex(header_length)
+    
+    if len(header_length_hex) == 2:
+        final_packet = header_prefix + "000000" + header_length_hex + encrypted
+    elif len(header_length_hex) == 3:
+        final_packet = header_prefix + "00000" + header_length_hex + encrypted
+    elif len(header_length_hex) == 4:
+        final_packet = header_prefix + "0000" + header_length_hex + encrypted
+    elif len(header_length_hex) == 5:
+        final_packet = header_prefix + "000" + header_length_hex + encrypted
+    else:
+        final_packet = header_prefix + "000000" + header_length_hex + encrypted
+    
+    return bytes.fromhex(final_packet)
+
 async def encrypted_proto(encoded_hex):
     key = b'Yg&tc%DEuh6%Zc^8'
     iv = b'6oyZDr22E3ychjM%'
@@ -55,9 +152,9 @@ async def encrypted_proto(encoded_hex):
     return encrypted_payload
     
 async def GeNeRaTeAccEss(uid , password):
-    url = "https://ffmconnect.live.gop.garenanow.com/oauth/guest/token/grant"
+    url = "https://100067.connect.garena.com/oauth/guest/token/grant"
     headers = {
-        "Host": "ffmconnect.live.gop.garenanow.com",
+        "Host": "100067.connect.garena.com",
         "User-Agent": (await Ua()),
         "Content-Type": "application/x-www-form-urlencoded",
         "Accept-Encoding": "gzip, deflate, br",
@@ -227,7 +324,7 @@ async def SEndPacKeT(OnLinE , ChaT , TypE , PacKeT):
     else: print(f'UnsoPorTed TypE or Writer is None! Type: {TypE}')
            
 async def TcPOnLine(ip, port, key, iv, AutHToKen, reconnect_delay=0.5):
-    global online_writer
+    global online_writer, status_check_results
     while True:
         try:
             reader , writer = await asyncio.open_connection(ip, int(port))
@@ -239,6 +336,7 @@ async def TcPOnLine(ip, port, key, iv, AutHToKen, reconnect_delay=0.5):
                 data2 = await reader.read(9999)
                 if not data2: break
                 
+                # Handle squad invite packets
                 if data2.hex().startswith('0500') and len(data2.hex()) > 1000:
                     try:
                         packet = await DeCode_PackEt(data2.hex()[10:])
@@ -253,6 +351,34 @@ async def TcPOnLine(ip, port, key, iv, AutHToKen, reconnect_delay=0.5):
                         await SEndPacKeT(None , whisper_writer , 'ChaT' , P)
                     except Exception:
                         pass
+                
+                # Handle status check response packets (0515)
+                elif data2.hex().startswith('0515') and len(data2.hex()) > 100:
+                    try:
+                        # Import here to avoid circular dependency
+                        from bot_api import get_player_status_from_packet
+                        
+                        packet_hex = data2.hex()[10:]
+                        status_result = get_player_status_from_packet(packet_hex)
+                        
+                        # Parse the packet to get player ID
+                        packet_json = await DeCode_PackEt(packet_hex)
+                        parsed_data = json.loads(packet_json)
+                        
+                        if "5" in parsed_data and "data" in parsed_data["5"]:
+                            json_data = parsed_data["5"]["data"]
+                            if "1" in json_data and "data" in json_data["1"]:
+                                data = json_data["1"]["data"]
+                                if "1" in data and "data" in data["1"]:
+                                    player_id = str(data["1"]["data"])
+                                    
+                                    # Store the status result
+                                    status_check_results[player_id] = status_result
+                                    print(f"✓ Status check result for {player_id}: {status_result.get('status', 'UNKNOWN')}")
+                    except Exception as e:
+                        print(f"Error processing status check response: {e}")
+                        pass
+                        
             online_writer.close() ; await online_writer.wait_closed() ; online_writer = None
         except Exception as e: print(f"- ErroR With Online TCP {ip}:{port} - {e}") ; online_writer = None
         await asyncio.sleep(reconnect_delay)
@@ -293,6 +419,65 @@ async def TcPChaT(ip, port, AutHToKen, key, iv, LoGinDaTaUncRypTinG, ready_event
             whisper_writer.close() ; await whisper_writer.wait_closed() ; whisper_writer = None
         except Exception as e: print(f"ErroR with Chat TCP {ip}:{port} - {e}") ; whisper_writer = None
         await asyncio.sleep(reconnect_delay)
+
+def createpacketinfo(player_id, key, iv):
+    fields = {1: 19, 2: {1: int(player_id)}}
+    packet = create_protobuf_packet(fields).hex()
+    return create_packet_with_header(packet, "0515", key, iv)
+
+def invite_skwad(player_id, key, iv):
+    fields = {1: 2, 2: {1: int(player_id), 2: "BD", 4: 1}}
+    packet = create_protobuf_packet(fields).hex()
+    return create_packet_with_header(packet, "0515", key, iv)
+
+def request_skwad(player_id, key, iv):
+    fields = {
+        1: 33,
+        2: {
+            1: int(player_id), 2: "BD", 3: 1, 4: 1, 7: 330, 8: 19459, 9: 100, 12: 1, 16: 1,
+            17: {2: 94, 6: 11, 8: "1.109.5", 9: 3, 10: 2},
+            18: 201,
+            23: {2: 1, 3: 1},
+            24: int(get_random_avatar()),
+            26: {}, 28: {}
+        }
+    }
+    packet = create_protobuf_packet(fields).hex()
+    return create_packet_with_header(packet, "0515", key, iv)
+
+def skwad_maker(key, iv):
+    fields = {
+        1: 1,
+        2: {
+            2: "\u0001", 3: 1, 4: 1, 5: "en", 9: 1, 11: 1, 13: 1,
+            14: {2: 5756, 6: 11, 8: "1.109.5", 9: 3, 10: 2}
+        }
+    }
+    packet = create_protobuf_packet(fields).hex()
+    return create_packet_with_header(packet, "0515", key, iv)
+
+def changes(num, key, iv):
+    fields = {
+        1: 17,
+        2: {1: 12480598706, 2: 1, 3: int(num), 4: 62, 5: "\u001a", 8: 5, 13: 329}
+    }
+    packet = create_protobuf_packet(fields).hex()
+    return create_packet_with_header(packet, "0515", key, iv)
+
+def leave_s(key, iv):
+    fields = {1: 7, 2: {1: 12480598706}}
+    packet = create_protobuf_packet(fields).hex()
+    return create_packet_with_header(packet, "0515", key, iv)
+
+def start_autooo(key, iv):
+    fields = {1: 9, 2: {1: 12480598706}}
+    packet = create_protobuf_packet(fields).hex()
+    return create_packet_with_header(packet, "0515", key, iv)
+
+def join_teamcode_packet(room_id, key, iv):
+    room_id_hex = ''.join(format(ord(c), 'x') for c in room_id)
+    packet = f"080412b705220701090a0b1219202a07{room_id_hex}300640014ae9040a8001303946454133424438453839323231443032303331423031313131313030303230303239303030323030323530303032353442383542303530393030303033423431373232393134323230313034303631343034376462626236636163626536363734373436356530303030303066663037303930353065313262636665363810dd011abf03755154571b08004d000c0950090c560c0b0857015a0f020f5d5009085657570c0b075d0f04080809120208440b0c0000080b5101060f0f060e5c010d0d5406560c0b0b0a5b005b0d0505000d1b020a445e5b0f026270697b636b5c606d4e5e437470517d5900665b5a04010e1a094f7c575b4a5178697f480878760e50606b585259697b077e5b605c4e0d12020a446b5e08610b4f465651546b465208740a7b436940780d7d4b561d610413094f684e54574a516a75547660484172750f5a7a416547540a6c4453080f1b08084d014e4c457c41066a1649485f08490413705b7e4f7a567f5e5c590005110b455e5e79760d0a775246005f52024751745148407c096f5d69794b750e1b0a4e6c747840625c7f415e6c1d6d5f081e02007f477f7d640e7e56567e041b50575654515e1f43564a5b5c565e5d484d595e5d5854525a5c534c584c57037a015571555b545267095c6b6001017504794d6273524e765c051b0b4460037b0b4161764108487151694972606b426b75440a7c415b045205100d44540e4d6a697a4a55747c41730b6f5f487a61597d68537369745d520e1a0c4f505d037d7a7203410c77716a69536c7f755363746b667c736860600d22047c575755300b3a091d6d647370687a1d144208312e3130382e3134480350015a0c0a044944433110761a024d455a0d0a04494443321084011a024d455a0d0a044944433310d7011a024d456a02656e8201024f52"
+    return create_packet_with_header(packet, "0515", key, iv)
 
 async def command_processor():
     print("✓ Command processor started. Ready for web panel commands.")
@@ -369,6 +554,95 @@ async def command_processor():
                 await SEndPacKeT(online_writer, None, 'OnLine', packet)
                 print("Leaving current squad...")
 
+            elif action == "spam_requests":
+                player_id = command.get("player_id")
+                count = command.get("count", 30)
+                print(f"Sending {count} join requests to player {player_id}")
+                for i in range(count):
+                    packet = request_skwad(player_id, key, iv)
+                    await SEndPacKeT(online_writer, None, 'OnLine', packet)
+                    await asyncio.sleep(0.1)
+                print(f"✓ Sent {count} join requests to {player_id}")
+
+            elif action == "spam_invites":
+                player_id = command.get("player_id")
+                threads = command.get("threads", 29)
+                print(f"Creating {threads} spam invite threads for player {player_id}")
+                
+                async def spam_invite_thread():
+                    packet_create = skwad_maker(key, iv)
+                    await SEndPacKeT(online_writer, None, 'OnLine', packet_create)
+                    await asyncio.sleep(0.5)
+                    
+                    packet_change = changes(5, key, iv)
+                    await SEndPacKeT(online_writer, None, 'OnLine', packet_change)
+                    await asyncio.sleep(0.5)
+                    
+                    packet_invite = invite_skwad(player_id, key, iv)
+                    await SEndPacKeT(online_writer, None, 'OnLine', packet_invite)
+                    await asyncio.sleep(4)
+                    
+                    packet_leave = leave_s(key, iv)
+                    await SEndPacKeT(online_writer, None, 'OnLine', packet_leave)
+                    await asyncio.sleep(0.5)
+                    
+                    packet_solo = changes(1, key, iv)
+                    await SEndPacKeT(online_writer, None, 'OnLine', packet_solo)
+                
+                await asyncio.gather(*[spam_invite_thread() for _ in range(threads)])
+                print(f"✓ Completed {threads} spam invite threads")
+
+            elif action == "team_attack":
+                team_code = command.get("team_code")
+                duration = command.get("duration", 45)
+                print(f"Starting team attack on {team_code} for {duration} seconds")
+                
+                start_time = asyncio.get_event_loop().time()
+                count = 0
+                while (asyncio.get_event_loop().time() - start_time) < duration:
+                    packet_join = join_teamcode_packet(team_code, key, iv)
+                    await SEndPacKeT(online_writer, None, 'OnLine', packet_join)
+                    
+                    packet_start = start_autooo(key, iv)
+                    await SEndPacKeT(online_writer, None, 'OnLine', packet_start)
+                    
+                    packet_leave = leave_s(key, iv)
+                    await SEndPacKeT(online_writer, None, 'OnLine', packet_leave)
+                    
+                    count += 1
+                    await asyncio.sleep(0.15)
+                
+                print(f"✓ Team attack completed: {count} join/leave cycles in {duration}s")
+
+            elif action == "status_check":
+                player_id = command.get("player_id")
+                print(f"Checking status of player {player_id}")
+                packet = createpacketinfo(player_id, key, iv)
+                await SEndPacKeT(online_writer, None, 'OnLine', packet)
+                print(f"✓ Status check packet sent for {player_id}. Note: Response parsing not yet implemented.")
+
+            elif action == "invite_two_players":
+                your_uid = command.get("your_uid")
+                target_uid = command.get("target_uid")
+                print(f"Creating 5-player squad and inviting {your_uid} and {target_uid}")
+                
+                packet_create = skwad_maker(key, iv)
+                await SEndPacKeT(online_writer, None, 'OnLine', packet_create)
+                await asyncio.sleep(1)
+                
+                packet_change = changes(4, key, iv)
+                await SEndPacKeT(online_writer, None, 'OnLine', packet_change)
+                await asyncio.sleep(0.5)
+                
+                packet_invite_target = invite_skwad(target_uid, key, iv)
+                await SEndPacKeT(online_writer, None, 'OnLine', packet_invite_target)
+                await asyncio.sleep(0.2)
+                
+                packet_invite_you = invite_skwad(your_uid, key, iv)
+                await SEndPacKeT(online_writer, None, 'OnLine', packet_invite_you)
+                
+                print(f"✓ Sent invites to both {your_uid} and {target_uid}")
+
         except Exception as e:
             print(f"[ERROR] Failed to execute command '{action}': {e}")
         
@@ -377,8 +651,46 @@ async def command_processor():
 async def handle_command(request):
     try:
         data = await request.json()
+        action = data.get('action')
+        
+        # For status_check, wait a bit and return the result if available
+        if action == 'status_check':
+            player_id = data.get('player_id')
+            
+            # Check if bot is authenticated (has key/iv set)
+            if not bot_state["key"] or not bot_state["iv"]:
+                return web.json_response({
+                    "status": "error", 
+                    "message": "Bot is not authenticated with Free Fire servers. Cannot check player status.",
+                    "bot_authenticated": False
+                }, status=200)
+            
+            await bot_state["command_queue"].put(data)
+            
+            # Wait up to 5 seconds for the response
+            for _ in range(50):  # 50 * 0.1 = 5 seconds
+                await asyncio.sleep(0.1)
+                if player_id in status_check_results:
+                    result = status_check_results[player_id]
+                    # Clean up the result after retrieving
+                    del status_check_results[player_id]
+                    return web.json_response({
+                        "status": "ok", 
+                        "message": "Status check completed",
+                        "status_result": result,
+                        "bot_authenticated": True
+                    }, status=200)
+            
+            # If no result after waiting, return pending status
+            return web.json_response({
+                "status": "ok", 
+                "message": "Status check sent but no response received. The bot may not be connected to game servers.",
+                "bot_authenticated": True
+            }, status=200)
+        
+        # For other commands, just queue them
         await bot_state["command_queue"].put(data)
-        return web.json_response({"status": "ok", "message": f"Command '{data.get('action')}' queued successfully."}, status=200)
+        return web.json_response({"status": "ok", "message": f"Command '{action}' queued successfully."}, status=200)
     except Exception as e:
         return web.json_response({"status": "error", "error": str(e)}, status=500)
 
@@ -393,7 +705,7 @@ async def run_web_server():
     await asyncio.Event().wait()
 
 async def MaiiiinE():
-    print("STARTING BOT FOR INDIA (IND) REGION")
+    print("STARTING BOT FOR BANGLADESH (BD) REGION")
     
     Uid , Pw = '4288852624','8E279BFEA325C44863298C50DD2E9A26F4F891A8A10565C1B15868437C2D4DAC'
     

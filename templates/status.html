@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Player Status Check - MR OPPY Emote Bot</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --purple-primary: #8e2de2;
+            --purple-secondary: #4a00e0;
+            --purple-light: #a099d8;
+            --purple-dark: #18116a;
+            --pink: #cf30aa;
+            --pink-dark: #6e1b60;
+            --bg-black: #000000;
+            --bg-card: #0a0a0a;
+            --bg-input: #010201;
+            --border-subtle: #1c191c;
+            --text-primary: #ffffff;
+            --text-muted: #c0b9c0;
+            --text-dark: #837484;
+        }
+
+        html, body { height: 100%; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-black);
+            color: var(--text-primary);
+            padding: 15px;
+            font-size: 14px;
+            position: relative;
+            overflow-x: hidden;
+            zoom: 0.9;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                linear-gradient(to right, #0f0f10 1px, transparent 1px),
+                linear-gradient(to bottom, #0f0f10 1px, transparent 1px);
+            background-size: 1rem 1rem;
+            background-position: center center;
+            z-index: 0;
+            opacity: 0.3;
+            filter: blur(0.5px);
+            pointer-events: none;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 30%, rgba(142, 45, 226, 0.03) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 70%, rgba(207, 48, 170, 0.03) 0%, transparent 50%);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .container {
+            max-width: 98%;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            position: relative;
+            z-index: 1;
+        }
+
+
+        header {
+            text-align: center;
+            padding: 15px 0 10px 0;
+            margin-bottom: 15px;
+        }
+
+        h1 {
+            font-size: 32px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--purple-primary), var(--pink));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin: 0;
+        }
+
+        .nav-header {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 15px 20px;
+            margin: 15px 0 20px 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-btn {
+            background: rgba(142, 45, 226, 0.2);
+            border: 2px solid rgba(142, 45, 226, 0.3);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .nav-btn:hover {
+            background: rgba(142, 45, 226, 0.4);
+            transform: translateY(-2px);
+            border-color: rgba(207, 48, 170, 0.5);
+            box-shadow: 0 5px 15px rgba(142, 45, 226, 0.3);
+        }
+
+        .nav-btn.active {
+            background: linear-gradient(135deg, var(--purple-primary), var(--pink));
+            border-color: var(--pink);
+        }
+
+        .card {
+            background: var(--bg-card);
+            border-radius: 14px;
+            padding: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            background: conic-gradient(
+                from 0deg,
+                var(--purple-dark),
+                var(--purple-primary) 25%,
+                var(--pink) 50%,
+                var(--purple-primary) 75%,
+                var(--purple-dark)
+            );
+            border-radius: 16px;
+            z-index: -1;
+            opacity: 0.6;
+            filter: blur(8px);
+        }
+
+        .card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: var(--bg-card);
+            border-radius: 16px;
+            z-index: -1;
+        }
+
+        .page-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-primary);
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            color: var(--purple-light);
+            font-weight: 600;
+            margin-bottom: 10px;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid rgba(142, 45, 226, 0.3);
+            border-radius: 10px;
+            font-size: 15px;
+            background: var(--bg-input);
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+            font-family: 'Inter', sans-serif;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--purple-primary);
+            box-shadow: 0 0 0 3px rgba(142, 45, 226, 0.15);
+        }
+
+        input::placeholder {
+            color: var(--text-dark);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, var(--purple-primary), var(--pink));
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(142, 45, 226, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .result {
+            margin-top: 25px;
+            padding: 20px;
+            border-radius: 10px;
+            display: none;
+            border: 2px solid;
+        }
+
+        .result.success {
+            background: rgba(16, 185, 129, 0.1);
+            border-color: rgba(16, 185, 129, 0.4);
+            color: #10b981;
+            display: block;
+        }
+
+        .result.error {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: rgba(239, 68, 68, 0.4);
+            color: #ef4444;
+            display: block;
+        }
+
+        .result.loading {
+            background: rgba(59, 130, 246, 0.1);
+            border-color: rgba(59, 130, 246, 0.4);
+            color: #3b82f6;
+            display: block;
+            text-align: center;
+        }
+
+        .result h3 {
+            margin-bottom: 12px;
+            font-size: 18px;
+        }
+
+        .result p {
+            line-height: 1.6;
+        }
+
+        .status-info {
+            margin-top: 15px;
+        }
+
+        .status-item {
+            padding: 12px;
+            margin: 8px 0;
+            background: rgba(142, 45, 226, 0.1);
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid rgba(142, 45, 226, 0.2);
+        }
+
+        .status-label {
+            font-weight: 600;
+            color: var(--purple-light);
+        }
+
+        .status-value {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-left-color: var(--purple-primary);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>MR OPPY EMOTE BOT</h1>
+            <div class="nav-header">
+                <a href="/" class="nav-btn">Emote Bot</a>
+                <a href="/status" class="nav-btn active">Status</a>
+                <a href="/check" class="nav-btn">Check Ban</a>
+                <a href="/invite" class="nav-btn">Invite Anyone</a>
+                <a href="/sm" class="nav-btn">Spam Join</a>
+                <a href="/x" class="nav-btn">Spam Invite</a>
+                <a href="/attack" class="nav-btn">Attack</a>
+            </div>
+        </header>
+
+        <div class="card">
+            <h2 class="page-title">🎮 Player Status Check</h2>
+            <form id="statusForm">
+                <div class="input-group">
+                    <label for="uid">Enter Player UID:</label>
+                    <input type="text" id="uid" name="uid" placeholder="123456789" required>
+                </div>
+                <button type="submit" class="btn" id="submitBtn">Check Status</button>
+            </form>
+            <div id="result" class="result"></div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('statusForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const uid = document.getElementById('uid').value.trim();
+            const resultDiv = document.getElementById('result');
+            const submitBtn = document.getElementById('submitBtn');
+
+            resultDiv.className = 'result loading';
+            resultDiv.innerHTML = '<div class="spinner"></div><p>Checking player status...</p>';
+            submitBtn.disabled = true;
+
+            try {
+                const response = await fetch('/api/status', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ uid: uid })
+                });
+
+                const data = await response.json();
+
+                if (data.status === 'success' || data.status === 'partial') {
+                    const playerData = data.data;
+                    resultDiv.className = 'result success';
+                    
+                    let statusHTML = `
+                        <h3>✅ Player Status Retrieved</h3>
+                        <div class="status-info">
+                            <div class="status-item">
+                                <span class="status-label">Player UID:</span>
+                                <span class="status-value">${playerData.uid}</span>
+                            </div>
+                            <div class="status-item">
+                                <span class="status-label">Nickname:</span>
+                                <span class="status-value">${playerData.nickname || 'Unknown'}</span>
+                            </div>`;
+                    
+                    if (playerData.game_status) {
+                        statusHTML += `
+                            <div class="status-item">
+                                <span class="status-label">Game Status:</span>
+                                <span class="status-value">${playerData.game_status}</span>
+                            </div>`;
+                    }
+                    
+                    if (playerData.squad_leader) {
+                        statusHTML += `
+                            <div class="status-item">
+                                <span class="status-label">Squad Leader UID:</span>
+                                <span class="status-value">${playerData.squad_leader}</span>
+                            </div>`;
+                    }
+                    
+                    if (playerData.squad_leader_nickname) {
+                        statusHTML += `
+                            <div class="status-item">
+                                <span class="status-label">Squad Leader:</span>
+                                <span class="status-value">${playerData.squad_leader_nickname}</span>
+                            </div>`;
+                    }
+                    
+                    if (playerData.squad_count) {
+                        statusHTML += `
+                            <div class="status-item">
+                                <span class="status-label">Squad Size:</span>
+                                <span class="status-value">${playerData.squad_count}/${playerData.squad_max || 4}</span>
+                            </div>`;
+                    }
+                    
+                    if (playerData.room_id) {
+                        statusHTML += `
+                            <div class="status-item">
+                                <span class="status-label">Room ID:</span>
+                                <span class="status-value">${playerData.room_id}</span>
+                            </div>`;
+                    }
+                    
+                    statusHTML += `
+                        </div>
+                        <p style="margin-top: 15px; font-style: italic;">${playerData.message || ''}</p>
+                        ${playerData.note ? `<p style="margin-top: 10px; color: var(--text-muted); font-size: 12px;">${playerData.note}</p>` : ''}
+                    `;
+                    
+                    resultDiv.innerHTML = statusHTML;
+                } else {
+                    resultDiv.className = 'result error';
+                    const errorMessage = data.message || (data.data && data.data.message) || 'Unknown error occurred';
+                    const errorNote = data.data && data.data.note ? `<p style="margin-top: 10px; color: var(--text-muted); font-size: 12px;">${data.data.note}</p>` : '';
+                    resultDiv.innerHTML = `<h3>❌ Error</h3><p>${errorMessage}</p>${errorNote}`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `<h3>❌ Error</h3><p>Failed to connect to server. Please try again.</p>`;
+            } finally {
+                submitBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

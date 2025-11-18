@@ -100,6 +100,45 @@
             margin: 0;
         }
 
+        /* Navigation Header */
+        .nav-header {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 15px 20px;
+            margin: 15px 0 20px 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-btn {
+            background: rgba(142, 45, 226, 0.2);
+            border: 2px solid rgba(142, 45, 226, 0.3);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .nav-btn:hover {
+            background: rgba(142, 45, 226, 0.4);
+            transform: translateY(-2px);
+            border-color: rgba(207, 48, 170, 0.5);
+            box-shadow: 0 5px 15px rgba(142, 45, 226, 0.3);
+        }
+
+        .nav-btn.active {
+            background: linear-gradient(135deg, var(--purple-primary), var(--pink));
+            border-color: var(--pink);
+        }
+
         /* Toast Notification System */
         #toast-container {
             position: fixed;
@@ -1196,6 +1235,15 @@
     <div class="container">
         <header>
             <h1>MR OPPY EMOTE BOT</h1>
+            <div class="nav-header">
+                <a href="/" class="nav-btn active">Emote Bot</a>
+                <a href="/status" class="nav-btn">Status</a>
+                <a href="/check" class="nav-btn">Check Ban</a>
+                <a href="/invite" class="nav-btn">Invite Anyone</a>
+                <a href="/sm" class="nav-btn">Spam Join</a>
+                <a href="/x" class="nav-btn">Spam Invite</a>
+                <a href="/attack" class="nav-btn">Attack</a>
+            </div>
         </header>
 
         {% with messages = get_flashed_messages(with_categories=true) %}

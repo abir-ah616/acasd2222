@@ -9,3 +9,16 @@ psutil
 pytz
 python-cfonts
 urllib3
+crypto
+aiohttp
+crypto
+flask
+protobuf
+protobuf-decoder
+psutil
+pycryptodome
+pyjwt
+python-cfonts
+pytz
+requests
+urllib3
