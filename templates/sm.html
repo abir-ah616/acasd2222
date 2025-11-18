@@ -309,11 +309,11 @@
             <h1>MR OPPY EMOTE BOT</h1>
             <div class="nav-header">
                 <a href="/" class="nav-btn">Emote Bot</a>
-                <a href="/status" class="nav-btn">Status</a>
+                
                 <a href="/check" class="nav-btn">Check Ban</a>
                 <a href="/invite" class="nav-btn">Invite Anyone</a>
                 <a href="/sm" class="nav-btn active">Spam Join</a>
-                <a href="/x" class="nav-btn">Spam Invite</a>
+                
                 <a href="/attack" class="nav-btn">Attack</a>
             </div>
         </header>
@@ -361,11 +361,11 @@
                     const smData = data.data;
                     resultDiv.className = 'result success';
                     resultDiv.innerHTML = `
-                        <h3>✅ Spam Attack Completed!</h3>
+                        <h3>✅ Spam Join Attack Initiated!</h3>
                         <p style="margin-top: 15px;">
-                            <strong>Target Player:</strong> ${smData.name}<br>
+                            
                             <strong>Player UID:</strong> ${smData.uid}<br>
-                            <strong>Requests Sent:</strong> ${smData.count}
+                            <strong>Requests Sent:</strong> 30
                         </p>
                         <p style="margin-top: 15px; font-weight: 600;">
                             ${smData.message}

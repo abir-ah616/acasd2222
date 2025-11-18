@@ -320,22 +320,22 @@
             <h1>MR OPPY EMOTE BOT</h1>
             <div class="nav-header">
                 <a href="/" class="nav-btn">Emote Bot</a>
-                <a href="/status" class="nav-btn">Status</a>
+                
                 <a href="/check" class="nav-btn">Check Ban</a>
                 <a href="/invite" class="nav-btn">Invite Anyone</a>
                 <a href="/sm" class="nav-btn">Spam Join</a>
-                <a href="/x" class="nav-btn">Spam Invite</a>
+                
                 <a href="/attack" class="nav-btn active">Attack</a>
             </div>
         </header>
 
         <div class="card">
-            <h2 class="page-title">🔥 Team Attack</h2>
+            <h2 class="page-title">Team Join Attack</h2>
             <div class="info-text">
                 Send team join/leave spam for 45 seconds
             </div>
             <div class="warning-text">
-                ⚠️ Note: This is a web-based simulation. To perform actual attacks, you need to use the in-game bot with valid credentials.
+                ⚠️ Note: Use this feature with caution as this can lag the target users and it's members device to lag.
             </div>
             <form id="attackForm">
                 <div class="input-group">
@@ -375,10 +375,10 @@
                     const attackData = data.data;
                     resultDiv.className = 'result success';
                     resultDiv.innerHTML = `
-                        <h3>✅ Attack Completed!</h3>
+                        <h3>✅ Attack Initiated!</h3>
                         <p style="margin-top: 15px;">
                             <strong>Target Team Code:</strong> ${attackData.team_code}<br>
-                            <strong>Duration:</strong> ${attackData.duration}
+                            <strong>Duration:</strong> 45 Seconds
                         </p>
                         <p style="margin-top: 15px; font-weight: 600;">
                             ${attackData.message}
