@@ -3,334 +3,375 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Spam Join - MR OPPY Emote Bot</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <title>MR OPPY | Spam Protocol</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
         :root {
-            --purple-primary: #8e2de2;
-            --purple-secondary: #4a00e0;
-            --purple-light: #a099d8;
-            --purple-dark: #18116a;
-            --pink: #cf30aa;
-            --pink-dark: #6e1b60;
-            --bg-black: #000000;
-            --bg-card: #0a0a0a;
-            --bg-input: #010201;
-            --border-subtle: #1c191c;
-            --text-primary: #ffffff;
-            --text-muted: #c0b9c0;
-            --text-dark: #837484;
+            --primary: #b026ff;
+            --primary-glow: rgba(176, 38, 255, 0.6);
+            --secondary: #00d4ff;
+            --secondary-glow: rgba(0, 212, 255, 0.6);
+            --danger: #ff2a6d;
+            --danger-glow: rgba(255, 42, 109, 0.6);
+            --success: #05d5aa;
+            --spam: #ff00ff; /* Neon Pink for Spam */
+            --spam-glow: rgba(255, 0, 255, 0.6);
+            --bg-deep: #050505;
+            --glass-bg: rgba(15, 15, 20, 0.65);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --text-main: #ffffff;
+            --text-dim: #8a8a9b;
+            --font-display: 'Space Grotesk', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
         }
 
-        html, body { height: 100%; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            font-family: 'Inter', sans-serif;
-            background: var(--bg-black);
-            color: var(--text-primary);
-            padding: 15px;
-            font-size: 14px;
-            position: relative;
+            background-color: var(--bg-deep);
+            color: var(--text-main);
+            font-family: var(--font-display);
+            min-height: 100vh;
             overflow-x: hidden;
-            zoom: 0.9;
+            background-image: 
+                radial-gradient(circle at 20% 80%, rgba(255, 0, 255, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 80% 20%, rgba(176, 38, 255, 0.1) 0%, transparent 40%);
+            background-attachment: fixed;
         }
 
-        body::before {
-            content: '';
+        /* Animated Mesh Background */
+        .bg-mesh {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image:
-                linear-gradient(to right, #0f0f10 1px, transparent 1px),
-                linear-gradient(to bottom, #0f0f10 1px, transparent 1px);
-            background-size: 1rem 1rem;
-            background-position: center center;
-            z-index: 0;
-            opacity: 0.3;
-            filter: blur(0.5px);
-            pointer-events: none;
-        }
-
-        body::after {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle at 20% 30%, rgba(142, 45, 226, 0.03) 0%, transparent 50%),
-                        radial-gradient(circle at 80% 70%, rgba(207, 48, 170, 0.03) 0%, transparent 50%);
-            z-index: 0;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 2px, 3px 100%;
             pointer-events: none;
         }
 
         .container {
-            max-width: 98%;
+            max-width: 1400px;
             margin: 0 auto;
+            padding: 20px;
             display: flex;
             flex-direction: column;
-            height: 100%;
-            position: relative;
-            z-index: 1;
+            min-height: 100vh;
         }
 
-
+        /* --- Header & Nav --- */
         header {
-            text-align: center;
-            padding: 15px 0 10px 0;
-            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            margin-bottom: 40px;
+            border-bottom: 1px solid var(--glass-border);
+            animation: slideDown 0.8s ease-out;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 15px;
         }
 
         h1 {
-            font-size: 32px;
-            font-weight: 800;
-            background: linear-gradient(135deg, var(--purple-primary), var(--pink));
+            font-family: var(--font-mono);
+            font-weight: 700;
+            font-size: 1.8rem;
+            letter-spacing: -1px;
+            background: linear-gradient(90deg, #fff, var(--text-dim));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            background-clip: text;
-            letter-spacing: 3px;
             text-transform: uppercase;
-            margin: 0;
         }
 
         .nav-header {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border-radius: 15px;
-            padding: 15px 20px;
-            margin: 15px 0 20px 0;
             display: flex;
-            flex-wrap: wrap;
             gap: 10px;
-            justify-content: center;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255,255,255,0.03);
+            padding: 5px;
+            border-radius: 12px;
+            border: 1px solid var(--glass-border);
         }
 
         .nav-btn {
-            background: rgba(142, 45, 226, 0.2);
-            border: 2px solid rgba(142, 45, 226, 0.3);
-            color: white;
-            padding: 10px 20px;
-            border-radius: 10px;
             text-decoration: none;
-            font-weight: bold;
+            color: var(--text-dim);
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
             transition: all 0.3s ease;
-            cursor: pointer;
-            font-size: 14px;
-        }
-
-        .nav-btn:hover {
-            background: rgba(142, 45, 226, 0.4);
-            transform: translateY(-2px);
-            border-color: rgba(207, 48, 170, 0.5);
-            box-shadow: 0 5px 15px rgba(142, 45, 226, 0.3);
-        }
-
-        .nav-btn.active {
-            background: linear-gradient(135deg, var(--purple-primary), var(--pink));
-            border-color: var(--pink);
-        }
-
-        .card {
-            background: var(--bg-card);
-            border-radius: 14px;
-            padding: 30px;
             position: relative;
             overflow: hidden;
         }
 
-        .card::before {
-            content: '';
-            position: absolute;
-            inset: -2px;
-            background: conic-gradient(
-                from 0deg,
-                var(--purple-dark),
-                var(--purple-primary) 25%,
-                var(--pink) 50%,
-                var(--purple-primary) 75%,
-                var(--purple-dark)
-            );
-            border-radius: 16px;
-            z-index: -1;
-            opacity: 0.6;
-            filter: blur(8px);
+        .nav-btn:hover {
+            color: #fff;
+            background: rgba(255,255,255,0.05);
         }
 
-        .card::after {
+        .nav-btn.active {
+            background: var(--spam); /* Pink for Spam Page */
+            color: #fff;
+            box-shadow: 0 0 15px var(--spam-glow);
+            font-weight: 700;
+        }
+
+        /* --- Content Layout --- */
+        .content-wrapper {
+            max-width: 600px;
+            margin: 0 auto;
+            width: 100%;
+            animation: zoomIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Pink Spam Border */
+        .glass-card::before {
             content: '';
             position: absolute;
-            inset: 0;
-            background: var(--bg-card);
-            border-radius: 16px;
-            z-index: -1;
+            top: 0; left: 0; right: 0; height: 2px;
+            background: linear-gradient(90deg, transparent, var(--spam), transparent);
+            opacity: 0.7;
         }
 
         .page-title {
-            font-size: 28px;
-            font-weight: 700;
-            color: var(--text-primary);
-            text-align: center;
-            margin-bottom: 10px;
+            font-family: var(--font-mono);
+            font-size: 1.2rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--spam);
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-shadow: 0 0 10px rgba(255, 0, 255, 0.3);
         }
 
-        .info-text {
-            background: rgba(207, 48, 170, 0.15);
+        .info-box {
+            background: rgba(255, 0, 255, 0.1);
+            border: 1px solid rgba(255, 0, 255, 0.2);
+            color: #ff80ff;
             padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            color: #ec4899;
-            text-align: center;
-            font-weight: 600;
-            border: 1px solid rgba(207, 48, 170, 0.3);
+            border-radius: 12px;
+            margin-bottom: 25px;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            display: flex;
+            gap: 12px;
+            align-items: center;
         }
 
+        /* --- Form Elements --- */
         .input-group {
             margin-bottom: 20px;
         }
 
-        label {
-            display: block;
-            color: var(--purple-light);
-            font-weight: 600;
-            margin-bottom: 10px;
-            font-size: 13px;
+        .input-label {
+            font-size: 0.75rem;
             text-transform: uppercase;
             letter-spacing: 1px;
+            color: var(--text-dim);
+            margin-bottom: 10px;
+            display: block;
+            font-weight: 600;
         }
 
-        input {
+        .cyber-input {
             width: 100%;
-            padding: 14px 16px;
-            border: 2px solid rgba(142, 45, 226, 0.3);
-            border-radius: 10px;
-            font-size: 15px;
-            background: var(--bg-input);
-            color: var(--text-primary);
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--glass-border);
+            color: #fff;
+            padding: 16px 20px;
+            border-radius: 12px;
+            font-family: var(--font-mono);
+            font-size: 1rem;
             transition: all 0.3s ease;
-            font-family: 'Inter', sans-serif;
         }
 
-        input:focus {
+        .cyber-input:focus {
             outline: none;
-            border-color: var(--purple-primary);
-            box-shadow: 0 0 0 3px rgba(142, 45, 226, 0.15);
+            border-color: var(--spam);
+            box-shadow: 0 0 0 2px rgba(255, 0, 255, 0.2);
+            background: rgba(0,0,0,0.5);
         }
 
-        input::placeholder {
-            color: var(--text-dark);
-        }
-
-        .btn {
+        .btn-spam {
             width: 100%;
-            padding: 16px;
-            background: linear-gradient(135deg, var(--purple-primary), var(--pink));
-            color: white;
+            padding: 18px;
+            background: linear-gradient(135deg, var(--spam), #b026ff);
+            color: #fff;
             border: none;
-            border-radius: 10px;
-            font-size: 16px;
+            border-radius: 12px;
+            font-family: var(--font-mono);
             font-weight: 700;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
             cursor: pointer;
             transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            box-shadow: 0 4px 20px rgba(255, 0, 255, 0.3);
+            margin-top: 10px;
+            position: relative;
+            overflow: hidden;
         }
 
-        .btn:hover:not(:disabled) {
+        .btn-spam:hover:not(:disabled) {
             transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(142, 45, 226, 0.4);
+            box-shadow: 0 8px 30px rgba(255, 0, 255, 0.5);
         }
 
-        .btn:disabled {
-            opacity: 0.5;
+        .btn-spam:disabled {
+            opacity: 0.6;
             cursor: not-allowed;
+            filter: grayscale(0.5);
         }
 
-        .result {
-            margin-top: 25px;
-            padding: 20px;
-            border-radius: 10px;
+        /* --- Console Result Area --- */
+        #result {
+            margin-top: 30px;
             display: none;
-            border: 2px solid;
+            animation: slideUp 0.4s ease-out;
         }
 
-        .result.success {
-            background: rgba(16, 185, 129, 0.1);
-            border-color: rgba(16, 185, 129, 0.4);
-            color: #10b981;
-            display: block;
+        .console-window {
+            background: #08080a;
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 0;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
         }
 
-        .result.error {
-            background: rgba(239, 68, 68, 0.1);
-            border-color: rgba(239, 68, 68, 0.4);
-            color: #ef4444;
-            display: block;
+        .console-bar {
+            background: #1a1a1f;
+            padding: 8px 15px;
+            display: flex;
+            gap: 6px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
         }
 
-        .result.loading {
-            background: rgba(59, 130, 246, 0.1);
-            border-color: rgba(59, 130, 246, 0.4);
-            color: #3b82f6;
-            display: block;
-            text-align: center;
-        }
+        .dot { width: 10px; height: 10px; border-radius: 50%; }
+        .dot.red { background: #ff5f56; }
+        .dot.yellow { background: #ffbd2e; }
+        .dot.green { background: #27c93f; }
 
-        .result h3 {
-            margin-bottom: 12px;
-            font-size: 18px;
-        }
-
-        .result p {
+        .console-content {
+            padding: 20px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
             line-height: 1.6;
+            color: #d4d4d4;
         }
+
+        .log-line { margin-bottom: 5px; opacity: 0; animation: typeIn 0.2s forwards; }
+        .log-success { color: var(--success); }
+        .log-error { color: var(--danger); }
+        .log-info { color: var(--secondary); }
+        .log-spam { color: var(--spam); }
 
         .spinner {
-            border: 4px solid rgba(255, 255, 255, 0.1);
-            border-left-color: var(--purple-primary);
+            display: inline-block;
+            width: 14px; height: 14px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: var(--spam);
             border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 15px;
+            animation: spin 0.8s linear infinite;
+            vertical-align: middle;
+            margin-right: 8px;
         }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+        /* Animations */
+        @keyframes slideDown { from { transform: translateY(-50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes zoomIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes typeIn { from { opacity: 0; transform: translateX(-5px); } to { opacity: 1; transform: translateX(0); } }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-header { display: flex; width: 100%; overflow-x: auto; margin-bottom: 20px; }
+            header { flex-direction: column; align-items: flex-start; gap: 15px; margin-bottom: 20px; }
+            .glass-card { padding: 20px; }
+            h1 { font-size: 1.5rem; }
         }
     </style>
 </head>
 <body>
+    <div class="bg-mesh"></div>
+
     <div class="container">
         <header>
-            <h1>MR OPPY EMOTE BOT</h1>
-            <div class="nav-header">
-                <a href="/" class="nav-btn">Emote Bot</a>
-                
-                <a href="/check" class="nav-btn">Check Ban</a>
-                <a href="/invite" class="nav-btn">Invite Anyone</a>
-                <a href="/sm" class="nav-btn active">Spam Join</a>
-                
-                <a href="/attack" class="nav-btn">Attack</a>
+            <div class="brand">
+                <i class="fa-solid fa-robot fa-2x" style="color: var(--primary);"></i>
+                <div>
+                    <h1>Mr Oppy</h1>
+                    <p style="color: var(--text-dim); font-size: 0.8rem; letter-spacing: 1px;">HIGH-FREQ SPAM TERMINAL</p>
+                </div>
             </div>
+            <nav class="nav-header">
+                <a href="/" class="nav-btn"><i class="fa-solid fa-gamepad"></i> Bot</a>
+                <a href="/check" class="nav-btn"><i class="fa-solid fa-shield-halved"></i> Check Ban</a>
+                <a href="/invite" class="nav-btn"><i class="fa-solid fa-user-plus"></i> Invite</a>
+                <a href="/sm" class="nav-btn active"><i class="fa-solid fa-rocket"></i> Spam</a>
+                <a href="/attack" class="nav-btn"><i class="fa-solid fa-skull"></i> Attack</a>
+            </nav>
         </header>
 
-        <div class="card">
-            <h2 class="page-title">⚡ Spam Join Requests</h2>
-            <div class="info-text">
-                Send 30 squad join requests to any player
-            </div>
-            <form id="smForm">
-                <div class="input-group">
-                    <label for="uid">Enter Player UID:</label>
-                    <input type="text" id="uid" name="uid" placeholder="123456789" required>
+        <div class="content-wrapper">
+            <div class="glass-card">
+                <h2 class="page-title"><i class="fa-solid fa-burst"></i> Spam Join Requests</h2>
+                
+                <div class="info-box">
+                    <i class="fa-solid fa-bolt"></i>
+                    <div>
+                        <strong>Flood Protocol:</strong><br>
+                        Transmits <strong>30</strong> consecutive squad join requests to flood the target's notification center.
+                    </div>
                 </div>
-                <button type="submit" class="btn" id="submitBtn">Start Spam</button>
-            </form>
-            <div id="result" class="result"></div>
+
+                <form id="smForm">
+                    <div class="input-group">
+                        <label class="input-label" for="uid">Target Player UID</label>
+                        <input type="text" id="uid" name="uid" class="cyber-input" placeholder="e.g. 123456789" required>
+                    </div>
+                    <button type="submit" class="btn-spam" id="submitBtn">
+                        <i class="fa-solid fa-paper-plane"></i> Initiate Spam Sequence
+                    </button>
+                </form>
+
+                <!-- Result Container -->
+                <div id="result">
+                    <div class="console-window">
+                        <div class="console-bar">
+                            <div class="dot red"></div>
+                            <div class="dot yellow"></div>
+                            <div class="dot green"></div>
+                        </div>
+                        <div class="console-content" id="console-logs">
+                            <!-- Logs injected here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -340,10 +381,16 @@
 
             const uid = document.getElementById('uid').value.trim();
             const resultDiv = document.getElementById('result');
+            const logsDiv = document.getElementById('console-logs');
             const submitBtn = document.getElementById('submitBtn');
 
-            resultDiv.className = 'result loading';
-            resultDiv.innerHTML = '<div class="spinner"></div><p>Sending spam join requests...</p>';
+            // Show Console & Loading State
+            resultDiv.style.display = 'block';
+            logsDiv.innerHTML = `
+                <div class="log-line">> Initializing spam protocol v2.4...</div>
+                <div class="log-line">> Target UID identified: <span class="log-info">${uid}</span></div>
+                <div class="log-line"><div class="spinner"></div><span style="opacity:0.8">Transmitting packets...</span></div>
+            `;
             submitBtn.disabled = true;
 
             try {
@@ -359,27 +406,32 @@
 
                 if (data.status === 'success') {
                     const smData = data.data;
-                    resultDiv.className = 'result success';
-                    resultDiv.innerHTML = `
-                        <h3>✅ Spam Join Attack Initiated!</h3>
-                        <p style="margin-top: 15px;">
-                            
-                            <strong>Player UID:</strong> ${smData.uid}<br>
-                            <strong>Requests Sent:</strong> 30
-                        </p>
-                        <p style="margin-top: 15px; font-weight: 600;">
-                            ${smData.message}
-                        </p>
-                    `;
+                    // Simulate slight delay for "processing" visual effect
+                    setTimeout(() => {
+                        logsDiv.innerHTML += `
+                            <div class="log-line log-success">> Packet transmission successful.</div>
+                            <div class="log-line">> Count: <span class="log-spam">30 Requests</span> sent.</div>
+                            <div class="log-line">> Server Response: ${smData.message}</div>
+                            <div class="log-line" style="margin-top:10px;">> <span class="log-success">TASK COMPLETED</span></div>
+                        `;
+                        logsDiv.scrollTop = logsDiv.scrollHeight;
+                    }, 500);
                 } else {
-                    resultDiv.className = 'result error';
-                    resultDiv.innerHTML = `<h3>❌ Error</h3><p>${data.message}</p>`;
+                    logsDiv.innerHTML += `
+                        <div class="log-line log-error">> Transmission interrupted.</div>
+                        <div class="log-line log-error">> Error: ${data.message}</div>
+                        <div class="log-line">> <span class="log-error">TASK FAILED</span></div>
+                    `;
                 }
             } catch (error) {
-                resultDiv.className = 'result error';
-                resultDiv.innerHTML = `<h3>❌ Error</h3><p>Failed to connect to server. Please try again.</p>`;
+                logsDiv.innerHTML += `
+                    <div class="log-line log-error">> Fatal Connection Error.</div>
+                    <div class="log-line">> Server unreachable. Check uplink.</div>
+                `;
             } finally {
-                submitBtn.disabled = false;
+                setTimeout(() => {
+                    submitBtn.disabled = false;
+                }, 1000);
             }
         });
     </script>
